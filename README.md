@@ -36,3 +36,7 @@ In the repository, go to **Settings → Pages**, set **Source** to *Deploy from 
 ## Credits
 
 Compiled by Asim D. Bakhshi with Claude, Anthropic's AI model. Each Reading belongs to the reader named above it, and can be constantly evolved as you read, reflect and reread the dialogues.
+
+## License
+
+Text and readings: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Code: MIT. See [LICENSE.md](LICENSE.md).
