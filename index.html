@@ -15,7 +15,7 @@
   --bg:#ECEFEB; --surface:#F7F8F5; --fg:#1E282B; --muted:#5A6866; --rule:#CBD3CF;
   --accent:#24575C; --ochre:#9A6A1C;
   --e-aporia:#9A6A1C; --e-thesis:#24575C; --e-myth:#5D4A86; --e-deed:#9A3E2B; --e-self:#4A5A6A; --e-law:#3E6B34;
-  --r-q:#24575C; --r-t:#7FA3A0; --r-x:#9A3E2B; --r-s:#A7B3B0; --r-a:#D8DEDB;
+  --r-q:#24575C; --r-t:#7FA3A0; --r-x:#9A3E2B; --r-s:#A7B3B0; --r-a:#D8DEDB; --ri-q:#F2F6F4; --ri-t:#10292B; --ri-x:#FBEFEA; --ri-s:#1E282B; --ri-a:#3D4A4D;
   --display:"GFS Didot","Didot","Bodoni 72",Georgia,serif;
   --body:"Literata",Georgia,"Times New Roman",serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
@@ -25,13 +25,13 @@
   --bg:#12181A; --surface:#1A2225; --fg:#DCE3E0; --muted:#93A19E; --rule:#2E3A3D;
   --accent:#7CC0BF; --ochre:#D9A85A;
   --e-aporia:#D9A85A; --e-thesis:#7CC0BF; --e-myth:#B3A2E0; --e-deed:#E08A73; --e-self:#A3B4C6; --e-law:#93C784;
-  --r-q:#7CC0BF; --r-t:#3F6F6D; --r-x:#E08A73; --r-s:#56656A; --r-a:#2A3437;
+  --r-q:#7CC0BF; --r-t:#3F6F6D; --r-x:#E08A73; --r-s:#56656A; --r-a:#2A3437; --ri-q:#0E2223; --ri-t:#E6F0EE; --ri-x:#2A120B; --ri-s:#E6ECEA; --ri-a:#B7C3C0;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12181A; --surface:#1A2225; --fg:#DCE3E0; --muted:#93A19E; --rule:#2E3A3D;
   --accent:#7CC0BF; --ochre:#D9A85A;
   --e-aporia:#D9A85A; --e-thesis:#7CC0BF; --e-myth:#B3A2E0; --e-deed:#E08A73; --e-self:#A3B4C6; --e-law:#93C784;
-  --r-q:#7CC0BF; --r-t:#3F6F6D; --r-x:#E08A73; --r-s:#56656A; --r-a:#2A3437;
+  --r-q:#7CC0BF; --r-t:#3F6F6D; --r-x:#E08A73; --r-s:#56656A; --r-a:#2A3437; --ri-q:#0E2223; --ri-t:#E6F0EE; --ri-x:#2A120B; --ri-s:#E6ECEA; --ri-a:#B7C3C0;
   color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
@@ -55,7 +55,10 @@ section>h2{font-size:30px;margin-bottom:6px}
 /* Arc */
 .arc{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:20px}
 .strip{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:3px;margin-block:8px 6px}
-.tile{aspect-ratio:1/2.4;border-radius:2px;position:relative;cursor:pointer;border:0;padding:0;max-width:100%}
+.tile{height:150px;border-radius:2px;position:relative;cursor:pointer;border:0;padding:6px 0;max-width:100%;min-width:0;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.tile span{writing-mode:vertical-rl;transform:rotate(180deg);font:500 11.5px/1 var(--mono);letter-spacing:.02em;white-space:nowrap;color:var(--ink)}
+.tile:hover{filter:brightness(1.08)}
+@media (max-width:640px){.tile{height:118px;padding:4px 0}.tile span{font-size:9.5px;letter-spacing:0}}
 .tile:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .phases{display:grid;grid-template-columns:11fr 3fr 4fr 6fr;gap:3px;font-family:var(--mono);font-size:11px;color:var(--muted)}
 .phases span{border-top:1px solid var(--rule);padding-top:4px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -362,7 +365,8 @@ const state={p:"All",e:"All",o:"Composition"};
 try{const v=JSON.parse(localStorage.getItem("atlasF")||"null");if(v)Object.assign(state,v)}catch(_){}
 
 const strip=document.getElementById("strip");
-D.forEach(d=>{const b=document.createElement("button");b.className="tile";b.style.background=`var(--r-${d.r})`;
+D.forEach(d=>{const b=document.createElement("button");b.className="tile";b.style.background=`var(--r-${d.r})`;b.style.setProperty("--ink",`var(--ri-${d.r})`);
+  const lb=document.createElement("span");lb.textContent=d.n;b.appendChild(lb);
   b.setAttribute("role","listitem");b.title=`${d.n}: ${ROLES[d.r]}`;b.setAttribute("aria-label",`${d.n}, Socrates ${ROLES[d.r]}`);
   b.onclick=()=>goTo(d.n);
   strip.appendChild(b)});
