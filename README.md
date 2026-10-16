@@ -35,7 +35,7 @@ In the repository, go to **Settings → Pages**, set **Source** to *Deploy from 
 
 ## Credits
 
-Compiled by Asim D. Bakhshi with Claude, Anthropic's AI model. Each Reading belongs to the reader named above it, and can be constantly evolved as you read, reflect and reread the dialogues.
+Compiled by [Asim D. Bakhshi](https://mechanomorph.substack.com) with Claude, Anthropic's AI model. Each Reading belongs to the reader named above it, and can be constantly evolved as you read, reflect and reread the dialogues.
 
 ## License
 

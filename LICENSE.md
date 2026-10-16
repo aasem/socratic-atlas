@@ -2,7 +2,7 @@
 
 ## Text and readings
 
-Copyright © 2026 Asim D. Bakhshi.
+Copyright © 2026 [Asim D. Bakhshi](https://mechanomorph.substack.com).
 
 The text of the Socratic Dialogue Atlas, including the readings in `readings.js`, is licensed under the **Creative Commons Attribution 4.0 International License (CC BY 4.0)**.
 
@@ -10,7 +10,7 @@ You are free to share (copy and redistribute the material in any medium or forma
 
 Suggested credit:
 
-> *Socratic Dialogue Atlas* by Asim D. Bakhshi, compiled with Claude (Anthropic). https://aasem.github.io/socratic-atlas/ — licensed under CC BY 4.0.
+> *Socratic Dialogue Atlas* by [Asim D. Bakhshi](https://mechanomorph.substack.com), compiled with Claude (Anthropic). https://aasem.github.io/socratic-atlas/ — licensed under CC BY 4.0.
 
 Full legal code: https://creativecommons.org/licenses/by/4.0/legalcode
 
