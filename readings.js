@@ -1,16 +1,20 @@
 // ─────────────────────────────────────────────────────────────
-//  MY READINGS — the one part of the atlas that is your opinion.
+//  READINGS — the one part of the atlas that is the reader's own opinion.
+//
+//  READINGS_AUTHOR is the name shown above every reading:
+//  "Bakhshi" appears as "Bakhshi’s Reading". Anyone who copies the
+//  atlas can put their own name here.
 //
 //  Edit the text between the backticks ` ` for any dialogue.
 //  A blank line starts a new paragraph.
 //  Keep the dialogue names on the left exactly as they are.
-//  Leave a reading empty (``) to hide it for that dialogue.
+//  Leave a reading empty (``) to show "No reading yet".
 //
 //  You can also edit on the page itself and use
 //  "Copy readings.js" to get this whole file back, ready to paste.
 // ─────────────────────────────────────────────────────────────
 
-window.READINGS_AUTHOR = `Claude (draft, to be replaced)`;
+window.READINGS_AUTHOR = `Bakhshi`;
 
 window.READINGS = {
   "Euthyphro": `The dilemma is the dialogue's lasting gift. But Socrates never takes up the practical question Euthyphro actually faces: what should a son do when his father has let a laborer die? An unfinished definition does not settle that, and the dialogue treats walking away as Euthyphro's failure rather than a shared one.`,
