@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Socratic Dialogue Atlas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a reading codex — a sticky filter strip over a single column of dialogue entries, each set like a manuscript folio with its Stephanus range in the margin. */
+:root{
+  --bg:#ECEFEB; --surface:#F7F8F5; --fg:#1E282B; --muted:#5A6866; --rule:#CBD3CF;
+  --accent:#24575C; --ochre:#9A6A1C;
+  --e-aporia:#9A6A1C; --e-thesis:#24575C; --e-myth:#5D4A86; --e-deed:#9A3E2B; --e-self:#4A5A6A; --e-law:#3E6B34;
+  --r-q:#24575C; --r-t:#7FA3A0; --r-x:#9A3E2B; --r-s:#A7B3B0; --r-a:#D8DEDB;
+  --display:"GFS Didot","Didot","Bodoni 72",Georgia,serif;
+  --body:"Literata",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12181A; --surface:#1A2225; --fg:#DCE3E0; --muted:#93A19E; --rule:#2E3A3D;
+  --accent:#7CC0BF; --ochre:#D9A85A;
+  --e-aporia:#D9A85A; --e-thesis:#7CC0BF; --e-myth:#B3A2E0; --e-deed:#E08A73; --e-self:#A3B4C6; --e-law:#93C784;
+  --r-q:#7CC0BF; --r-t:#3F6F6D; --r-x:#E08A73; --r-s:#56656A; --r-a:#2A3437;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12181A; --surface:#1A2225; --fg:#DCE3E0; --muted:#93A19E; --rule:#2E3A3D;
+  --accent:#7CC0BF; --ochre:#D9A85A;
+  --e-aporia:#D9A85A; --e-thesis:#7CC0BF; --e-myth:#B3A2E0; --e-deed:#E08A73; --e-self:#A3B4C6; --e-law:#93C784;
+  --r-q:#7CC0BF; --r-t:#3F6F6D; --r-x:#E08A73; --r-s:#56656A; --r-a:#2A3437;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:880px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0;line-height:1.15}
+p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+header.hero{padding-block:56px 28px;display:grid;gap:18px}
+.hero h1{font-size:clamp(40px,7vw,66px)}
+.hero h1 .gr{display:block;font-size:.42em;color:var(--accent);margin-top:10px;letter-spacing:.02em}
+.hero .lede{max-width:62ch;font-size:18px;color:var(--fg)}
+.hero .lede em{color:var(--accent);font-style:italic}
+
+section{padding-block:28px}
+section>h2{font-size:30px;margin-bottom:6px}
+.sub{color:var(--muted);max-width:64ch;margin-bottom:20px}
+
+/* Arc */
+.arc{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:20px}
+.strip{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:3px;margin-block:8px 6px}
+.tile{aspect-ratio:1/2.4;border-radius:2px;position:relative;cursor:pointer;border:0;padding:0;max-width:100%}
+.tile:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.phases{display:grid;grid-template-columns:11fr 3fr 4fr 6fr;gap:3px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.phases span{border-top:1px solid var(--rule);padding-top:4px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-size:13.5px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.arc .read{margin-top:16px;max-width:66ch}
+
+/* Filters */
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px;border-bottom:1px solid var(--rule);display:grid;gap:8px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.frow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.frow .lab{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);width:64px}
+.chip{font:500 12.5px var(--mono);padding:5px 10px;border-radius:999px;border:1px solid var(--rule);background:transparent;color:var(--fg);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.count{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+/* Entries */
+.entries{display:grid;gap:0}
+.entry{display:grid;grid-template-columns:132px minmax(0,1fr);gap:24px;padding-block:28px;border-bottom:1px solid var(--rule)}
+.margin{display:grid;gap:8px;align-content:start}
+.margin .steph{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.end{display:inline-flex;align-items:center;gap:6px;font:500 11.5px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.end::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor}
+.role{font-size:13px;color:var(--muted);font-style:italic}
+.entry h3{font-size:30px}
+.entry .q{font-size:18px;margin-top:4px;color:var(--fg)}
+.who{color:var(--muted);font-size:14.5px;margin-top:6px}
+dl{display:grid;grid-template-columns:118px minmax(0,1fr);gap:10px 18px;margin:18px 0 0}
+dt{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:4px}
+dd{margin:0;max-width:64ch}
+dd.ethic{border-left:2px solid var(--accent);padding-left:12px;color:var(--fg)}
+dd .ref{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.entry.flash{animation:fl 1.4s ease}
+@keyframes fl{0%{background:color-mix(in srgb,var(--accent) 14%,transparent)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){.entry.flash{animation:none}}
+.empty{padding:28px 0;color:var(--muted)}
+
+/* Verdict */
+.passages{display:grid;gap:14px}
+.passage{display:grid;grid-template-columns:132px minmax(0,1fr);gap:24px;padding:16px 0;border-top:1px solid var(--rule)}
+.passage .where{font-family:var(--mono);font-size:13px;color:var(--accent)}
+.passage h4{font-family:var(--body);font-weight:600;font-size:16px;margin:0 0 4px}
+.readers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:8px}
+.reader{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:20px;display:grid;gap:10px;align-content:start}
+.reader h3{font-size:24px}
+.reader.b{border-color:var(--accent)}
+.reader p{font-size:15.5px}
+.maxims{display:grid;gap:0;margin-top:8px}
+.maxim{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:20px;padding:14px 0;border-top:1px solid var(--rule)}
+.maxim p{font-size:17px}
+.maxim .src{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.open p+p{margin-top:12px}
+.open{max-width:66ch}
+.note{font-size:14px;color:var(--muted);max-width:68ch}
+.note p+p{margin-top:8px}
+
+/* Plot */
+.acts{display:grid;gap:30px}
+.act h3{font-size:24px}
+.act .span{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.06em}
+.act .gist{color:var(--muted);max-width:64ch;margin:4px 0 10px;font-size:15px}
+.tl{display:grid;gap:0;border-left:1px solid var(--rule);margin-left:6px}
+.tlr{display:grid;grid-template-columns:78px 64px minmax(0,1fr);gap:14px;padding:9px 0 9px 16px;position:relative}
+.tlr::before{content:"";position:absolute;left:-5px;top:16px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.tlr.ev::before{background:var(--bg);border:1px solid var(--muted);width:7px;height:7px;left:-4px}
+.tlr .y{font-family:var(--mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:3px}
+.tlr .ag{font-family:var(--mono);font-size:11.5px;color:var(--muted);padding-top:4px}
+.tlr.ev .t{color:var(--muted);font-style:italic;font-size:14.5px}
+.tlr .t{min-width:0}
+.tlr button.nm{font:400 19px var(--display);color:var(--fg);background:none;border:0;padding:0;cursor:pointer;text-align:left;border-bottom:1px solid var(--rule)}
+.tlr button.nm:hover{color:var(--accent);border-color:var(--accent)}
+.tlr button.nm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tlr .line{font-size:14.5px;margin-top:2px}
+.tlr .fate{font-size:13.5px;color:var(--e-deed);margin-top:3px}
+.reading{max-width:66ch;margin-top:30px;display:grid;gap:14px}
+.reading h3{font-size:24px}
+.undated{font-size:14px;color:var(--muted);margin-top:4px}
+dd.aft{color:var(--e-deed)}
+/* My reading */
+.mine{margin-top:20px;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;display:grid;gap:8px}
+.mine .hd{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.mine .hd b{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ochre)}
+.mine .hd span{font-size:12.5px;color:var(--muted);font-style:italic}
+.mine .hd .local{font:500 11px var(--mono);color:var(--e-deed);font-style:normal}
+.mine .txt{display:grid;gap:8px;max-width:64ch}
+.mine .txt.empty{color:var(--muted);font-style:italic}
+.mine textarea{width:100%;min-height:120px;font:15px/1.55 var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--rule);border-radius:3px;padding:10px;resize:vertical}
+.mine textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btn{font:500 12px var(--mono);padding:5px 11px;border-radius:3px;border:1px solid var(--rule);background:transparent;color:var(--fg);cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding-block:14px 4px;font-size:13.5px;color:var(--muted)}
+.mbar textarea{width:100%;min-height:160px;font:12px/1.5 var(--mono);color:var(--fg);background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:10px}
+.margin .dd{font-family:var(--mono);font-size:12px;color:var(--accent)}
+
+@media (max-width:640px){
+  .tlr{grid-template-columns:64px minmax(0,1fr);gap:4px 10px}
+  .tlr .ag{grid-column:1;grid-row:2;padding-top:0}
+  .tlr .t{grid-column:2;grid-row:1 / span 2}
+  .entry,.passage{grid-template-columns:minmax(0,1fr);gap:10px}
+  .margin{grid-template-columns:auto auto;justify-content:start;gap:6px 14px;align-items:center}
+  dl{grid-template-columns:minmax(0,1fr);gap:2px}
+  dd{margin-bottom:10px}
+  .readers{grid-template-columns:minmax(0,1fr)}
+  .maxim{grid-template-columns:minmax(0,1fr);gap:4px}
+  .maxim .src{text-align:left}
+  .frow .lab{width:auto}
+  .count{margin-left:0;width:100%}
+  .phases{font-size:9.5px}
+}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Plato's dialogues · twenty-four entries · Stephanus pagination</div>
+  <h1>Socratic Dialogue Atlas<span class="gr">ἔλεγχος · ἀπορία · φρόνησις</span></h1>
+  <p class="lede">What is each dialogue asking, how does it argue, where does it end, and who pushes back hardest? Read whole, does the corpus breed a <em>fetish for endless provocation</em> in a young reader, or a different epistemic ethic for thinking and acting?</p>
+</header>
+
+<section>
+  <h2>What happens to Socrates across the corpus</h2>
+  <p class="sub">Each bar is one entry below, in the conventional (disputed) order of composition. The color is Socrates' role in it. Tap a bar to jump to the dialogue.</p>
+  <div class="arc">
+    <div class="strip" id="strip" role="list"></div>
+    <div class="phases"><span>Early</span><span>Transitional</span><span>Middle</span><span>Late</span></div>
+    <div class="legend">
+      <span><i style="background:var(--r-q)"></i>Questioner, no answer of his own</span>
+      <span><i style="background:var(--r-t)"></i>Teacher of doctrine</span>
+      <span><i style="background:var(--r-x)"></i>Himself refuted</span>
+      <span><i style="background:var(--r-s)"></i>Present but silent</span>
+      <span><i style="background:var(--r-a)"></i>Absent</span>
+    </div>
+    <p class="read">The pattern is the first argument of this atlas. The Socrates who only asks belongs to the early group. Plato then gives him doctrines, has a young Socrates refuted by Parmenides, silences him while a visitor from Elea conducts the inquiry, and finally removes him entirely from the <i>Laws</i>, which is a work of legislation. The corpus itself does not stay in the armchair.</p>
+  </div>
+</section>
+
+<section id="plot">
+  <h2>The plot</h2>
+  <p class="sub">Composition order shows Plato's development. Dramatic order, the dates at which the conversations are set, shows something else: a story of fifty years that runs from a precocious young man refuted by Parmenides to an old man drinking hemlock, through a war that destroys most of the people he talks to. Dramatic dates follow the usual scholarly reconstructions and several are approximate. Hollow markers are historical events.</p>
+  <div class="acts" id="acts"></div>
+
+  <div class="reading">
+    <h3>What the plot adds to the argument</h3>
+    <p><b>The listeners act, and the story records what they did.</b> Plato wrote after the events, for readers who knew them. Critias and Charmides, who discuss self-control, became leaders of the Thirty, a regime remembered for its killings. Alcibiades, who praises Socrates at dawn in the <i>Symposium</i>, was within months accused of sacrilege, then defected to Sparta. Meno betrayed his comrades in Persia. Nicias and Laches, the two experts on courage, died in battle. Polemarchus, host of the long night on justice, was executed by the Thirty. The arguments end in aporia; the lives end in history. In the drama itself, the gap between knowing and acting is not a theoretical puzzle but the tragedy of a generation.</p>
+    <p><b>Almost every conversation is cut off by life.</b> A court filing in the <i>Euthyphro</i>, a lecture in the <i>Hippias</i>, the tutors in the <i>Lysis</i>, an indictment at the end of the <i>Theaetetus</i>, the ship from Delos in the <i>Crito</i>, the hemlock in the <i>Phaedo</i>. The dialogues are not set in an armchair. They are set in gymnasia, courts, prisons and festival nights during a war, and they end because something must be done. A reader who notices the frame cannot take them as a model of endless leisure.</p>
+    <p><b>The last month reorders the late dialogues.</b> Placed by dramatic date, the <i>Theaetetus</i>, <i>Euthyphro</i>, <i>Sophist</i> and <i>Statesman</i> all fall in the days between Socrates' indictment and his trial. The silent Socrates of the <i>Sophist</i> is a defendant listening while a stranger investigates what separates a philosopher from a sophist, which is exactly what the jury will get wrong. The promised dialogue on the philosopher was never written. Socrates' death takes its place.</p>
+    <p><b>Socrates does not change; the city around him does.</b> His method is the same at nineteen and seventy. What develops is the cost of it. The only question the dialogues settle without aporia is what this man will do when his principles meet the city's verdict, and the answer is given by an action, not a definition. Plato chose to transmit philosophy as the story of a life, told and retold by friends from memory, rather than as a treatise. For anyone writing in the dialogue form, the frame, the setting and the fates of the speakers are where action enters the text.</p>
+  </div>
+</section>
+
+<section style="padding-bottom:0">
+  <h2>The dialogues</h2>
+  <p class="sub">Interlocutors' arguments are paraphrased, not quoted. References are to Stephanus pages so you can check them against any edition.</p>
+</section>
+
+<div class="filters" role="group" aria-label="Filter dialogues">
+  <div class="frow"><span class="lab">Order</span><span id="fOrder" class="frow"></span></div>
+  <div class="frow"><span class="lab">Period</span><span id="fPeriod" class="frow"></span></div>
+  <div class="frow"><span class="lab">Ending</span><span id="fEnd" class="frow"></span><span class="count mono" id="count"></span></div>
+</div>
+<div class="mbar" id="mbar"></div>
+<div class="entries" id="entries"></div>
+
+<section>
+  <h2>What the corpus says about its young readers</h2>
+  <p class="sub">Plato anticipated your question. Seven passages address it directly.</p>
+  <div class="passages">
+    <div class="passage"><div class="where">Apology 23c</div><div><h4>Socrates admits the imitation problem</h4><p>Wealthy young men follow him around and enjoy watching people examined, then go off and examine others themselves. The people they humiliate blame Socrates. He presents this as a side effect, not a goal.</p></div></div>
+    <div class="passage"><div class="where">Republic 537d–539d</div><div><h4>No dialectic before thirty</h4><p>Young people who taste refutation early treat it as a game, tear at arguments like puppies pulling at anything in reach, are refuted in turn, and end believing nothing they once held. Plato's own curriculum delays dialectic until after long training in mathematics and practical service. This is the most direct answer in the corpus to the fetish you describe.</p></div></div>
+    <div class="passage"><div class="where">Phaedo 89d–90e</div><div><h4>The warning against misology</h4><p>Someone who trusts arguments naively, then sees them collapse, comes to hate all argument, just as someone repeatedly betrayed comes to hate people. Socrates says to blame your own lack of skill, not reason itself. The danger runs both ways: credulity about arguments and contempt for them.</p></div></div>
+    <div class="passage"><div class="where">Euthydemus 271a–307c</div><div><h4>Refutation for show is not philosophy</h4><p>The dialogue stages two professional refuters whose tricks win applause and teach nothing, beside Socrates trying to turn a boy toward wisdom that is useful. Plato separates eristic (arguing to win) from philosophy (arguing to become better).</p></div></div>
+    <div class="passage"><div class="where">Parmenides 135c–d</div><div><h4>Defining too early is a young man's error</h4><p>Old Parmenides tells the young Socrates that he tried to define the beautiful, the just and the good before he had trained, and that his eagerness is admirable but premature.</p></div></div>
+    <div class="passage"><div class="where">Meno 97a–98a</div><div><h4>Action does not wait for definition</h4><p>True opinion guides action as well as knowledge does. Knowledge adds stability: it is opinion tied down by reasoning, so it does not run away like the statues of Daedalus.</p></div></div>
+    <div class="passage"><div class="where">Statesman 294a–c</div><div><h4>No general rule fits every case</h4><p>Law is like a stubborn, ignorant man who repeats the same order whatever the situation, because human affairs are too varied for any rule to cover. What rules cannot supply, judgment of measure and right timing (<i>kairos</i>) must.</p></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Two readers of the same author</h2>
+  <div class="readers">
+    <div class="reader">
+      <div class="eyebrow">Reads Euthyphro through Republic I</div>
+      <h3>The reader who learns provocation</h3>
+      <p>He meets a brilliant questioner who always wins and never commits. He learns that every confident person can be undone with three questions, and that saying "I know nothing" is a winning move. He has learned the technique without the reasons for it.</p>
+      <p>Plato wrote this reader into the text: the young imitators in the <i>Apology</i>, the puppies of <i>Republic</i> VII, the applauding crowd in the <i>Euthydemus</i>. Your worry describes a real outcome of a partial reading.</p>
+    </div>
+    <div class="reader b">
+      <div class="eyebrow">Reads the corpus to the Laws</div>
+      <h3>The reader who learns an ethic</h3>
+      <p>He sees refutation used to check false confidence before drastic action, then sees it bounded: by the trial and the prison, by warnings about misology and youthful dialectic, by the founder of the method being refuted, and by a final turn to measure, timing and law.</p>
+      <p>What he takes away is not "question everything forever" but a discipline for holding beliefs while acting on them, and for building institutions that outlast any one argument.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The epistemic ethic, stated plainly</h2>
+  <p class="sub">What the whole corpus teaches a person who must think and act at once.</p>
+  <div class="maxims">
+    <div class="maxim"><p>Examine hardest the certainty you are about to act on drastically, especially against someone close to you.</p><span class="src">Euthyphro</span></div>
+    <div class="maxim"><p>Act on your best true opinion; inquire so that it becomes stable and teachable, not so that you may finally be allowed to act.</p><span class="src">Meno 97–98</span></div>
+    <div class="maxim"><p>Judge a teacher by whether his deeds match his words.</p><span class="src">Laches 188c–e</span></div>
+    <div class="maxim"><p>When a valid-looking argument reaches a monstrous conclusion, distrust the argument before you obey it.</p><span class="src">Hippias Minor</span></div>
+    <div class="maxim"><p>Never argue to win. Refutation that leaves no one better is a performance.</p><span class="src">Euthydemus</span></div>
+    <div class="maxim"><p>When arguments fail you, blame your skill and keep reasoning. Neither credulity nor contempt.</p><span class="src">Phaedo 89–90</span></div>
+    <div class="maxim"><p>Earn the right to abstraction through training and practical life; defining before you have lived is premature.</p><span class="src">Parmenides 135; Republic VII</span></div>
+    <div class="maxim"><p>Rules generalize; situations do not. Cultivate judgment of measure and right timing.</p><span class="src">Statesman 294</span></div>
+    <div class="maxim"><p>The good life is a mixture. A man who knows only perfect circles cannot find his way home.</p><span class="src">Philebus 62a–b</span></div>
+    <div class="maxim"><p>Once you have decided, accept the cost of acting on it.</p><span class="src">Crito</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Where your objections still stand</h2>
+  <div class="open">
+    <p>The corpus does not answer everything you raised. Protagoras' Great Speech, that virtue is taught by the whole community the way a language is, is never refuted; Socrates changes the subject. That is the strongest ancient statement of your view that traditions do the universalizing for us.</p>
+    <p>Crito's charge that Socrates is abandoning his sons gets an answer about the city's laws, not about the sons. The household appears mostly as an interruption: the tutors who drag the boys home in the <i>Lysis</i>, Xanthippe sent away in the <i>Phaedo</i>.</p>
+    <p>And the early demand that you must define a concept before you can know any instance of it, which Peter Geach named the Socratic fallacy, is only implicitly withdrawn by Plato's later practice. It is never openly renounced, which is one reason readers who stop early inherit it.</p>
+  </div>
+</section>
+
+<section class="note">
+  <p><b>On order and authorship.</b> Stylometry gives good support for a late group (Sophist, Statesman, Philebus, Laws, with Timaeus and Critias). The order within the early group is conjecture. The authenticity of the Hippias Major is disputed. Cratylus, Menexenus, Timaeus, Critias and the Alcibiades I are omitted for length. How much of the early Socrates is the historical man and how much is Plato is the unresolved "Socratic problem"; Xenophon's very different, more practical Socrates is a useful counterweight.</p>
+</section>
+</div>
+
+<script src="readings.js"></script>
+<script>
+const D=[
+{n:"Euthyphro",p:"Early",s:"2a–16a",e:"aporia",r:"q",q:"What is piety?",w:"Euthyphro, a seer on his way to prosecute his own father for manslaughter.",m:"Elenchus on a series of definitions, ending in the famous dilemma: do the gods love the pious because it is pious, or is it pious because they love it?",a:"No definition survives. Euthyphro leaves in a hurry, still on his way to court.",o:"Euthyphro's position is never argued but is strong: he has a case today and a religious tradition behind him. He cannot postpone action until he has a definition.",x:"The target is drastic action on certainty you have not examined, not action as such."},
+{n:"Laches",p:"Early",s:"178a–201c",e:"aporia",r:"q",q:"What is courage?",w:"The generals Laches and Nicias, consulted by two fathers about how to educate their sons.",m:"Starts from a practical question (should the boys train in armored combat?) and climbs to a demand for a definition.",a:"Aporia. Everyone, old men included, agrees they need to go back to school.",o:"Laches says he judges a speaker by whether his life matches his words, and accepts Socrates because of how he behaved in the retreat at Delium <span class='ref'>188c–189b</span>. Two men who have shown courage cannot define it.",x:"Practical knowledge can exist without a definition. The test of a teacher is the harmony of word and deed."},
+{n:"Charmides",p:"Early",s:"153a–176d",e:"aporia",r:"q",q:"What is sōphrosynē (self-control, sound-mindedness)?",w:"The young Charmides and his guardian Critias, both later members of the oligarchy of the Thirty.",m:"Definitions tested in turn, ending in an examination of 'knowledge of knowledge', a second-order self-knowledge.",a:"Aporia, with real doubt whether knowledge of knowledge is possible, and what good it would do if it were.",o:"Critias defends self-knowledge as knowing what one knows and does not know. Socrates himself presses the question of its usefulness.",x:"Even reflexive, meta-level knowledge must answer the question of what good it does. The irony of the cast, future tyrants, is part of the lesson."},
+{n:"Lysis",p:"Early",s:"203a–223b",e:"aporia",r:"q",q:"What is friendship?",w:"The boys Lysis and Menexenus, in a wrestling school.",m:"Playful elenchus through paradoxes: like loves like, unlike loves unlike, and a 'first friend' for whose sake all else is loved.",a:"Aporia. Socrates notes that they have made fools of themselves: they are friends, yet cannot say what a friend is.",o:"No argument; the boys' household tutors arrive and take them home. Ordinary life ends the inquiry.",x:"The dialogue openly concedes that lived relationship comes before its definition."},
+{n:"Hippias Major",p:"Early",s:"281a–304e",e:"aporia",r:"q",q:"What is the beautiful (to kalon)?",w:"Hippias of Elis, a celebrated polymath and sophist.",m:"Socrates asks for the single thing that makes all beautiful things beautiful; Hippias keeps offering examples.",a:"Aporia, ending on the proverb that beautiful things are difficult.",o:"Hippias says Socrates chops arguments into shavings, while what matters is a fine speech that wins in court or assembly <span class='ref'>304a–b</span>.",x:"Plato puts the sophist's charge of trivial hair-splitting into his own text and lets it stand."},
+{n:"Hippias Minor",p:"Early",s:"363a–376c",e:"aporia",r:"q",q:"Is the person who does wrong willingly better than one who does it unwillingly?",w:"Hippias again.",m:"The craft analogy pushed to its limit: the runner who runs slowly on purpose is the better runner, so the willing wrongdoer is the better person.",a:"A conclusion Socrates says he cannot accept, though he cannot escape it. He admits he wavers.",o:"Hippias' commonsense refusal to accept the conclusion, which is right.",x:"An argument's apparent validity does not earn your obedience. When it reaches a monstrous result, suspect the argument."},
+{n:"Ion",p:"Early",s:"530a–542b",e:"thesis",r:"q",q:"Does a performer of poetry speak from knowledge or from inspiration?",w:"Ion, a prize-winning rhapsode who recites Homer.",m:"The craft test: for each subject Homer treats, chariot-driving, medicine, generalship, who judges it best?",a:"Ion speaks from divine inspiration, not knowledge, like iron rings hanging from a magnet.",o:"Ion insists he would make the best general because he knows Homer. Absurd, but it voices poetry's real claim to teach how to live.",x:"Separate knowing how to do a thing from being moved to speak well about it."},
+{n:"Euthydemus",p:"Early",s:"271a–307c",e:"self",r:"q",q:"How does philosophy differ from eristic, arguing to win?",w:"The brothers Euthydemus and Dionysodorus, professional verbal wrestlers; the youth Clinias; Crito.",m:"Contrasting scenes: the brothers' trick refutations, which win applause, alternate with Socrates' attempt to turn Clinias toward wisdom.",a:"Philosophy aims at a wisdom that benefits its user; eristic only defeats. The frame adds a critic, often read as Isocrates, who dismisses all of it.",o:"The anonymous speechwriter says philosophers waste effort on worthless talk <span class='ref'>304d–305b</span>. Socrates replies that people half in philosophy and half in politics rank third in both.",x:"Plato himself diagnoses the fetish of provocation, refutation as display, and condemns it."},
+{n:"Protagoras",p:"Early",s:"309a–362a",e:"aporia",r:"q",q:"Can virtue be taught? Is virtue one thing or many?",w:"Protagoras, the greatest sophist, with Hippocrates, a young man eager to study with him.",m:"Long cross-examination, a contest over interpreting a poem by Simonides, and an argument from measuring pleasures.",a:"The positions swap. Socrates, who doubted virtue could be taught, argues it is knowledge; Protagoras, who teaches it, denies it is knowledge. Both admit confusion.",o:"Protagoras' Great Speech <span class='ref'>320c–328d</span>: everyone teaches virtue, parents, nurses, teachers, laws and the whole city, just as everyone teaches a language. No single expert is needed. Socrates never refutes it.",x:"The strongest case in the corpus that moral knowledge lives in a community's practice, which is your argument about traditions."},
+{n:"Apology",p:"Early",s:"17a–42a",e:"deed",r:"q",q:"Why does Socrates question people, and will he stop?",w:"Meletus, his prosecutor, and a jury of 501 Athenians.",m:"A defense speech with a brief cross-examination of Meletus and the story of the Delphic oracle.",a:"Human wisdom is knowing that one does not know. He will not stop. The unexamined life is not worth living <span class='ref'>38a</span>. He is condemned.",o:"The verdict itself, and the charge of corrupting the young. Socrates concedes that young men imitate his questioning on their elders <span class='ref'>23c</span>.",x:"Inquiry is presented as a public duty that takes courage. He also names, without solving, the problem of imitators."},
+{n:"Crito",p:"Early",s:"43a–54e",e:"deed",r:"q",q:"Should Socrates escape from prison?",w:"Crito, his oldest friend, who has arranged the escape.",m:"After a short exchange, the Laws of Athens are personified and address Socrates directly.",a:"He stays. One must never return wrong for wrong, and he has an agreement with the city.",o:"Crito says he is betraying his sons, leaving them orphans, and shaming his friends <span class='ref'>45c–d</span>. The answer concerns the city, not the sons.",x:"Decide by the argument that has held up best so far, then act on it fully and accept the cost."},
+{n:"Gorgias",p:"Transitional",s:"447a–527e",e:"myth",r:"q",q:"What is rhetoric? Is it better to suffer injustice than to do it?",w:"Gorgias, his pupil Polus, and the politician Callicles.",m:"Elenchus that escalates into open confrontation, then a closing myth of judgment after death.",a:"A firm thesis: doing injustice is worse than suffering it, and rhetoric without justice is flattery. It ends in myth because Callicles stops cooperating.",o:"Callicles <span class='ref'>484c–486d</span>: philosophy is charming in youth, but a grown man still doing it deserves a beating and will be helpless if someone drags him into court. A prophecy of the trial, and your question about age, answered harshly.",x:"Hold a conviction you cannot prove to someone who refuses to argue. Refusing to argue is not a refutation."},
+{n:"Meno",p:"Transitional",s:"70a–100c",e:"thesis",r:"t",q:"Can virtue be taught?",w:"Meno, a Thessalian aristocrat, and Anytus, a democrat who later helped prosecute Socrates.",m:"Meno's paradox about inquiry, the geometry lesson with an enslaved boy, then reasoning from hypothesis.",a:"Learning as recollection. Then a turn: true opinion guides action as well as knowledge; knowledge is true opinion tied down <span class='ref'>97a–98a</span>. Good men seem to have virtue by divine gift.",o:"Meno compares Socrates to a stingray that numbs everyone it touches <span class='ref'>80a–b</span>. Anytus warns him to be careful whom he criticizes.",x:"Acting on true opinion is legitimate. Inquiry is for making opinion stable and teachable."},
+{n:"Republic I",p:"Transitional",s:"327a–354c",e:"aporia",r:"q",q:"What is justice?",w:"The elderly Cephalus, his son Polemarchus, and the sophist Thrasymachus.",m:"Classic elenchus against three definitions, the last delivered aggressively.",a:"Aporia. Socrates says he has grabbed at each argument like a glutton without learning what justice is.",o:"Thrasymachus: justice is the advantage of the stronger, and Socrates is a child who needs a nurse to wipe his nose.",x:"Silencing an aggressive opponent is not the same as knowing."},
+{n:"Phaedo",p:"Middle",s:"57a–118a",e:"deed",r:"t",q:"Is the soul immortal? Why should a philosopher not fear death?",w:"Simmias and Cebes, trained in Pythagorean thought, on Socrates' last day.",m:"A sequence of proofs (from opposites, recollection, affinity, the Forms), a myth of the afterlife, then the death scene.",a:"The theory of Forms and the immortality of the soul; philosophy as practice for dying. He drinks the hemlock.",o:"Simmias' soul-as-harmony objection and Cebes' image of the weaver who outlasts many cloaks shake the whole company.",x:"The warning against misology <span class='ref'>89d–90e</span>: do not swing from trusting arguments to hating them."},
+{n:"Symposium",p:"Middle",s:"172a–223d",e:"thesis",r:"t",q:"What is erōs?",w:"Phaedrus, Aristophanes, the host Agathon, the priestess Diotima (reported), and Alcibiades.",m:"A sequence of speeches instead of elenchus. Socrates reports what Diotima taught him: the ascent from one beautiful body to Beauty itself.",a:"Love is desire to possess the good forever, rising toward the Form of Beauty.",o:"Alcibiades bursts in drunk and praises Socrates' endurance and strangeness, but describes him as someone who withholds himself <span class='ref'>215a–222b</span>.",x:"A human portrait qualifies the doctrine: the lover of Forms may fail to love persons."},
+{n:"Republic II–X",p:"Middle",s:"357a–621d",e:"thesis",r:"t",q:"What is justice, and is it better than injustice even without reward?",w:"Glaucon and Adeimantus, Plato's brothers.",m:"The analogy of city and soul, constructive dialectic, and images: the sun, the divided line, the cave; ends with the Myth of Er.",a:"Full doctrine: justice as the right order of the soul, rule by philosophers, the Form of the Good.",o:"Glaucon's Ring of Gyges <span class='ref'>359b–360d</span> restates Thrasymachus' challenge more strongly: anyone who could be unjust invisibly would be.",x:"The curriculum withholds dialectic until thirty, because the young misuse refutation <span class='ref'>537d–539d</span>."},
+{n:"Phaedrus",p:"Middle",s:"227a–279c",e:"thesis",r:"t",q:"What makes speech and writing good? What is love?",w:"Phaedrus, a young admirer of speeches, outside the city walls.",m:"Competing speeches, the myth of the charioteer, the method of collection and division, the story of Theuth's invention of writing.",a:"Real rhetoric requires knowledge of souls and of which speech suits which soul. Written words cannot answer back; living conversation is superior.",o:"Lysias' written speech, which Phaedrus admires, stands for the prestige of polished text.",x:"Knowledge must be fitted to a particular person. Abstraction alone does not teach."},
+{n:"Theaetetus",p:"Late",s:"142a–210d",e:"aporia",r:"q",q:"What is knowledge?",w:"Theaetetus, a gifted young mathematician, and his teacher Theodorus.",m:"Socrates as midwife <span class='ref'>150b–151d</span>, testing knowledge as perception, as true belief, and as true belief with an account.",a:"Aporia. All three fail. Socrates then goes off to answer Meletus' indictment.",o:"Socrates gives Protagoras a voice to defend 'man is the measure' and admits his own criticism was unfair <span class='ref'>166a–168c</span>.",x:"The stated benefit of aporia is moral: Theaetetus will be gentler with companions and not think he knows what he does not <span class='ref'>210b–c</span>."},
+{n:"Parmenides",p:"Late",s:"126a–166c",e:"self",r:"x",q:"Can the theory of Forms survive scrutiny?",w:"The aged Parmenides and Zeno, against a very young Socrates.",m:"Young Socrates is refuted (including the regress later called the Third Man), then Parmenides demonstrates a strenuous dialectical exercise.",a:"The Forms face grave objections, yet without something like them thought itself is impossible.",o:"Parmenides tells the young Socrates he tried to define the beautiful, just and good before he had trained <span class='ref'>135c–d</span>.",x:"Plato turns the method on its own hero. Premature definition is a young man's error."},
+{n:"Sophist",p:"Late",s:"216a–268d",e:"self",r:"s",q:"What is a sophist? How is falsehood possible?",w:"A visitor from Elea, with Theaetetus. Socrates is silent.",m:"Successive divisions of kinds, and a 'parricide' against Parmenides on non-being.",a:"Not-being understood as difference; the sophist as a maker of imitations.",o:"The 'noble sophistry' passage <span class='ref'>230b–231b</span>: cleansing refutation resembles sophistry as a dog resembles a wolf.",x:"Plato concedes how thin the line is between Socratic refutation and the sophistry it opposes."},
+{n:"Statesman",p:"Late",s:"257a–311c",e:"thesis",r:"s",q:"What knowledge does a statesman have?",w:"The Eleatic visitor, with a young man also named Socrates.",m:"Division, a myth of the reversed cosmos, and the model of weaving.",a:"Statesmanship is an art of right measure and right timing. Law is second best, because it cannot fit every case.",o:"The young Socrates objects to the idea of rule without laws <span class='ref'>293e</span>.",x:"Generalization cannot capture particulars <span class='ref'>294a–c</span>, so judgment of measure and kairos is indispensable."},
+{n:"Philebus",p:"Late",s:"11a–67b",e:"thesis",r:"t",q:"Is the good life one of pleasure or of intelligence?",w:"Protarchus, with Philebus, who withdraws early.",m:"Analysis of limit and the unlimited, and of how good things are mixed.",a:"The best life is a mixture of pleasure and knowledge; measure ranks first among goods.",o:"Philebus simply refuses to continue, the hedonist's exit.",x:"Even the practical arts belong in the good life. Someone who knows only divine circles and spheres cannot find his way home <span class='ref'>62a–b</span>."},
+{n:"Laws",p:"Late",s:"624a–969d",e:"law",r:"a",q:"How should a new city be founded and governed?",w:"An unnamed Athenian visitor with a Cretan and a Spartan elder. Socrates does not appear.",m:"Practical legislation. Laws come with preludes meant to persuade citizens before they command.",a:"A detailed code for a city called Magnesia, covering education, religion, family and offices.",o:"The elders' local traditions are treated as starting points worth correcting, not demolishing.",x:"Philosophy's final form in Plato is institution-building: persuasion together with law, tradition reformed rather than refuted."}
+];
+const ENDS={aporia:"Aporia",thesis:"Thesis",myth:"Myth",deed:"Deed",self:"Self-critique",law:"Legislation"};
+const ROLES={q:"Questioner",t:"Teacher of doctrine",x:"Refuted",s:"Silent",a:"Absent"};
+const PERIODS=["Early","Transitional","Middle","Late"];
+const order=["Euthyphro","Laches","Charmides","Lysis","Hippias Major","Hippias Minor","Ion","Euthydemus","Protagoras","Apology","Crito","Gorgias","Meno","Republic I","Phaedo","Symposium","Republic II–X","Phaedrus","Theaetetus","Parmenides","Sophist","Statesman","Philebus","Laws"];
+const N={
+"Parmenides":{y:"c. 450",ag:"c. 19",t:-450,set:"House of Pythodorus during the Great Panathenaea. Told through a chain of three narrators: Cephalus of Clazomenae repeats what Antiphon learned by heart from Pythodorus.",act:"Zeno reads his book. A very young Socrates challenges it with confidence, then the aged Parmenides dismantles his theory and shows him the exercise he lacks.",aft:"Parmenides' young respondent, Aristoteles, later served among the Thirty.",line:"A brilliant youth is refuted by the old master."},
+"Protagoras":{y:"c. 433",ag:"36",t:-433,set:"House of Callias, the richest man in Athens, crowded with visiting sophists. Narrated by Socrates to a friend the same day.",act:"Young Hippocrates wakes Socrates before dawn, desperate to study with Protagoras. Socrates nearly walks out when Protagoras will not keep his answers short, and the guests negotiate the rules of debate.",aft:"Many of the guests reappear at Agathon's dinner in the Symposium. The war began within two years, and several of them were caught up in the religious scandals of 415.",line:"The intellectual elite of Athens on the eve of war."},
+"Charmides":{y:"429",ag:"40",t:-429,set:"The wrestling school of Taureas, the day Socrates returns from the bloody siege of Potidaea. Narrated by Socrates.",act:"Asked first for war news, then for a cure for the beautiful Charmides' headaches, Socrates turns to self-control. At the end Charmides and Critias jokingly say they will use force to make him keep teaching.",aft:"Both became leaders of the Thirty in 404, and both died fighting the democrats at Munychia in 403.",line:"Two future tyrants discuss self-control.",fate:"Critias and Charmides: the Thirty, killed 403."},
+"Laches":{y:"c. 424–418",ag:"45–51",t:-422,set:"After a public display of fighting in armor. Direct drama.",act:"Two fathers ask famous generals how to raise their sons, and the generals end up deferring to Socrates, whom Laches saw keep his nerve in the retreat from Delium.",aft:"Laches fell at Mantinea in 418. Nicias led the Sicilian expedition, delayed its retreat because of an eclipse, and was executed by the Syracusans in 413.",line:"Generals who cannot define courage.",fate:"Laches killed 418; Nicias executed in Sicily 413."},
+"Phaedrus":{y:"c. 418–416",ag:"51–53",t:-417,set:"Outside the city walls by the river Ilissus, under a plane tree at summer noon with cicadas singing. The only time we see Socrates in the countryside.",act:"Phaedrus has a speech by Lysias hidden under his cloak. Socrates covers his head to deliver a rival speech, then uncovers it to recant.",aft:"Phaedrus was exiled in 415 for his part in the profanation of the Mysteries. The dialogue closes with a prayer to Pan.",line:"A summer noon outside the walls.",fate:"Phaedrus exiled 415."},
+"Symposium":{y:"416",ag:"53",t:-416,set:"Agathon's house, celebrating his first victory in tragedy. Narrated around 400 by Apollodorus, who had it from Aristodemus, an eyewitness.",act:"Socrates arrives late, having stood lost in thought on a neighbor's porch. Aristophanes has hiccups. Alcibiades crashes in drunk. At dawn Socrates is still arguing as the poets fall asleep, then goes off to spend an ordinary day.",aft:"Within months came the scandal of the mutilated Herms and the parodied Mysteries. Alcibiades, Phaedrus and Eryximachus were among those accused. Alcibiades fled to Sparta and was murdered in 404.",line:"The last great party before the catastrophe.",fate:"Alcibiades accused 415, defects, murdered 404."},
+"Republic I":{y:"c. 421 or 411",ag:"48 or 58",t:-412,set:"The house of Cephalus, a wealthy resident alien and shield manufacturer, in the Piraeus on the night of the first festival of Bendis. Narrated by Socrates the next day.",act:"Polemarchus' slave grabs Socrates' cloak, and the young men joke that they outnumber him so he must stay. Later Thrasymachus throws himself into the conversation like a wild animal.",aft:"In 404 the Thirty executed Polemarchus without trial and seized the family's factory; his brother Lysias escaped. The conversation on justice is held in a house that injustice would destroy.",line:"A festival night in the Piraeus.",fate:"Polemarchus executed by the Thirty, 404."},
+"Republic II–X":{y:"c. 421 or 411",ag:"48 or 58",t:-411.9,set:"The same night and house as Book I.",act:"Glaucon and Adeimantus refuse to let Socrates stop, and the evening becomes the founding of a city in words.",aft:"The torch race on horseback and the night festival the young men came for never happen; the conversation takes their place.",line:"The night becomes a city built in words."},
+"Gorgias":{y:"Impossible date",ag:"—",t:-410,set:"Athens, just after Gorgias has given a display. Direct drama. Its references range from 429 to 406, so it cannot be fixed in time, perhaps deliberately.",act:"Socrates arrives after the performance. The exchange turns hostile until Callicles answers only to please Gorgias, and Socrates finishes the argument alone, playing both parts.",aft:"Callicles' warning that Socrates will be helpless if dragged into court stands in the text as a prophecy.",line:"A warning: philosophy will leave you helpless in court."},
+"Lysis":{y:"c. 409",ag:"c. 60",t:-409,set:"A new wrestling school outside the walls, on the road from the Academy to the Lyceum. Narrated by Socrates.",act:"Hippothales, in love with Lysis, wants advice on how to talk to him, and Socrates shows him by talking to the boy himself.",aft:"The boys' tutors, slightly drunk from a festival, drag them home and end the conversation.",line:"Friendship, interrupted by the household."},
+"Euthydemus":{y:"c. 407",ag:"62",t:-407,set:"The dressing room of the Lyceum gymnasium. Narrated by Socrates to Crito the next day.",act:"Two aging brothers who once taught armed combat now sell refutation, and their tricks bring roars of laughter from their followers.",aft:"Crito reports that a respectable observer thought it all disgraceful, and still does not know what to tell his own sons about philosophy.",line:"Refutation sold as entertainment."},
+"Meno":{y:"402",ag:"67",t:-402,set:"Athens. Direct drama, with no scene given.",act:"A visiting Thessalian aristocrat demands a quick answer. Anytus, a powerful democrat, joins, takes offense at Socrates' remarks about famous Athenians, and leaves with a warning.",aft:"Meno joined Cyrus' revolt in Persia in 401, where Xenophon portrays him as treacherous, and died in Persian hands. Three years after this conversation Anytus helped prosecute Socrates.",line:"The future accuser issues a warning.",fate:"Meno dies in Persia; Anytus prosecutes Socrates."},
+"Theaetetus":{y:"399, spring",ag:"70",t:-398.9,set:"A wrestling school in Athens. Framed in 369, when Euclides of Megara, having just met Theaetetus carried home dying of battle wounds and dysentery, has a slave read out the record he made of this conversation.",act:"Theodorus presents a gifted pupil who looks like Socrates, with the same snub nose and bulging eyes.",aft:"Socrates breaks off to go and answer Meletus' indictment, arranging to meet again the next morning.",line:"Ends as Socrates goes to answer the indictment.",fate:"Theaetetus dies of wounds, 369."},
+"Euthyphro":{y:"399",ag:"70",t:-398.8,set:"The porch of the King Archon, where religious cases were filed. Direct drama.",act:"Socrates has come about his own indictment. Euthyphro is there to file a murder charge against his father. Two prosecutions meet at one door.",aft:"Euthyphro hurries off to court. Socrates goes on toward his trial.",line:"Two prosecutions meet at one door."},
+"Sophist":{y:"399",ag:"70",t:-398.7,set:"The same company as the Theaetetus, the next morning. Direct drama.",act:"Theodorus brings a visitor from Elea. Socrates, now under indictment, asks whether sophist, statesman and philosopher are one kind or three, then falls silent and listens.",aft:"The question his jury will decide, whether he is a philosopher or a sophist, is examined in front of him while he says nothing.",line:"The defendant listens in silence."},
+"Statesman":{y:"399",ag:"70",t:-398.6,set:"Continues the Sophist the same day.",act:"The visitor questions a young namesake of Socrates while the old Socrates watches.",aft:"A third dialogue, on the philosopher, is promised and never written. The trilogy breaks off where Socrates' own fate begins.",line:"The promised Philosopher never comes."},
+"Apology":{y:"399",ag:"70",t:-398.5,set:"The people's court, before 501 jurors. Socrates speaks in his own voice.",act:"Convicted by a narrow margin, he proposes free meals at public expense as his 'penalty', then a fine guaranteed by friends, among them Plato, who names himself as present.",aft:"Sentenced to death. The execution waits for a sacred ship to return from Delos.",line:"Conviction and sentence."},
+"Crito":{y:"399",ag:"70",t:-398.4,set:"Prison, before dawn, about a month after the trial. Direct drama.",act:"Crito sits watching Socrates sleep peacefully. The ship has been sighted, so escape must happen now. Socrates tells him of a dream that he will die on the third day.",aft:"He stays.",line:"The escape is refused."},
+"Phaedo":{y:"399",ag:"70",t:-398.3,set:"Prison, the last day. Narrated some time later by Phaedo to Echecrates in Phlius. Plato notes that he himself was ill and absent.",act:"Xanthippe is taken home weeping. Socrates rubs his leg freed from the chains, mentions he has been putting Aesop into verse, argues for the soul's immortality, bathes, sees his children, and drinks the hemlock.",aft:"His last words ask Crito to pay a debt of a cock to Asclepius.",line:"The last day."},
+"Laws":{y:"No date",ag:"—",t:1000,set:"Crete, on the long walk from Knossos to the cave and shrine of Zeus on a midsummer day, with rests in cypress groves.",act:"Three old men walk and talk. A colony is being planned, and the Cretan has been asked to help write its laws.",aft:"Plato wrote it after his own failed attempts to guide the ruler of Syracuse. Tradition says it was left on wax tablets at his death and copied out by a pupil.",line:"Old men on the road, writing laws for a city that does not yet exist."},
+"Hippias Major":{y:"No date",ag:"—",t:999,set:"Athens, during Hippias' visit. Direct drama.",act:"Socrates claims a rude friend at home will beat him if he cannot say what the beautiful is. The friend turns out to be Socrates himself.",aft:"Hippias leaves to give his lecture."},
+"Hippias Minor":{y:"No date",ag:"—",t:999,set:"Just after Hippias has lectured on Homer. Direct drama.",act:"Socrates asks whether Achilles or Odysseus is the better man, and the question turns to lying.",aft:"Socrates admits he is not convinced by his own conclusion either."},
+"Ion":{y:"No date",ag:"—",t:999,set:"Athens. Direct drama.",act:"Ion has just won first prize at Epidaurus and is bound for the Panathenaea when Socrates stops him.",aft:"Offered the choice, Ion prefers to be called divine rather than dishonest."},
+"Philebus":{y:"No date",ag:"—",t:999,set:"Begins in the middle of a conversation, with no scene.",act:"Philebus has already argued himself into silence, and Protarchus takes over his position.",aft:"The young men will not let Socrates leave until he finishes."}
+};
+const EV=[
+{t:-431,y:"431",x:"War with Sparta begins"},{t:-430,y:"430",x:"Plague in Athens"},{t:-428.9,y:"429",x:"Death of Pericles"},
+{t:-424,y:"424",x:"Battle of Delium; Socrates in the retreat"},{t:-421,y:"421",x:"Peace of Nicias"},{t:-418,y:"418",x:"Battle of Mantinea"},
+{t:-415,y:"415",x:"Herms mutilated; the Sicilian expedition sails"},{t:-413,y:"413",x:"Destruction of the army in Sicily"},
+{t:-411,y:"411",x:"Oligarchic coup of the Four Hundred"},{t:-406,y:"406",x:"Arginusae trial; Socrates alone refuses the illegal vote"},
+{t:-404,y:"404",x:"Athens surrenders; the Thirty take power"},{t:-403,y:"403",x:"Democracy restored, with an amnesty"},
+{t:-401,y:"401",x:"Cyrus' march into Persia"}
+];
+const ACTS=[
+{h:"Prologue",n:"A young man is refuted",s:"c. 450",f:t=>t<=-440,g:"The future questioner is first seen being questioned."},
+{h:"Act I",n:"The questioner among the powerful",s:"433–416",f:t=>t>-440&&t<=-416,g:"Socrates moves among the richest houses and most promising young men of an imperial city at the height of its power. Almost every name here meets a bad end."},
+{h:"Act II",n:"War, defeat and suspicion",s:"415–400",f:t=>t>-416&&t<-399,g:"Sicily, coups, surrender, tyranny. The conversations grow harder, and the warnings to Socrates grow more explicit."},
+{h:"Act III",n:"The last month",s:"399",f:t=>t>=-399&&t<0,g:"Seven dialogues between the indictment and the hemlock. Read in this order, they form a single plot."},
+{h:"Epilogue",n:"Without Socrates",s:"written c. 350",f:t=>t===1000,g:"Plato's last work. Socrates is gone and philosophy has turned to legislation."}
+];
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-");
+const state={p:"All",e:"All",o:"Composition"};
+try{const v=JSON.parse(localStorage.getItem("atlasF")||"null");if(v)Object.assign(state,v)}catch(_){}
+
+const strip=document.getElementById("strip");
+D.forEach(d=>{const b=document.createElement("button");b.className="tile";b.style.background=`var(--r-${d.r})`;
+  b.setAttribute("role","listitem");b.title=`${d.n}: ${ROLES[d.r]}`;b.setAttribute("aria-label",`${d.n}, Socrates ${ROLES[d.r]}`);
+  b.onclick=()=>goTo(d.n);
+  strip.appendChild(b)});
+function goTo(n){state.p="All";state.e="All";save();render();const el=document.getElementById(slug(n));if(el){el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth",block:"start"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash")}}
+
+(function plot(){
+  const host=document.getElementById("acts");
+  const items=[...D.map(d=>({k:"d",n:d.n,...N[d.n]})),...EV.map(e=>({k:"e",...e}))];
+  host.innerHTML=ACTS.map(a=>{
+    const rows=items.filter(i=>a.f(i.t)).sort((p,q)=>p.t-q.t).map(i=>i.k==="e"
+      ?`<div class="tlr ev"><span class="y">${i.y}</span><span class="ag"></span><div class="t">${i.x}</div></div>`
+      :`<div class="tlr"><span class="y">${i.y}</span><span class="ag">age ${i.ag}</span><div class="t"><button class="nm" data-n="${i.n}">${i.n}</button><p class="line">${i.line||""}</p>${i.fate?`<p class="fate">${i.fate}</p>`:""}</div></div>`).join("");
+    return `<div class="act"><div class="span">${a.h} · ${a.s}</div><h3>${a.n}</h3><p class="gist">${a.g}</p><div class="tl">${rows}</div></div>`}).join("")+
+    `<p class="undated">No dramatic date: ${D.filter(d=>N[d.n].t===999).map(d=>`<i>${d.n}</i>`).join(", ")}.</p>`;
+  host.querySelectorAll("button.nm").forEach(b=>b.onclick=()=>goTo(b.dataset.n));
+})();
+
+function chips(host,key,opts,labels){host.innerHTML="";["All",...opts].forEach(o=>{const c=document.createElement("button");c.className="chip";c.id=`f-${key}-${slug(o)}`;
+  c.textContent=o==="All"?"All":(labels?labels[o]:o);c.setAttribute("aria-pressed",String(state[key]===o));
+  c.onclick=()=>{state[key]=o;save();render()};host.appendChild(c)})}
+function save(){try{localStorage.setItem("atlasF",JSON.stringify(state))}catch(_){}}
+function render(){
+  chips(document.getElementById("fOrder"),"o",["Composition","Story"]);
+  document.querySelector("#f-o-all")?.remove();
+  chips(document.getElementById("fPeriod"),"p",PERIODS);
+  chips(document.getElementById("fEnd"),"e",Object.keys(ENDS),ENDS);
+  if(state.o==="All")state.o="Composition";
+  let list=D.filter(d=>(state.p==="All"||d.p===state.p)&&(state.e==="All"||d.e===state.e));
+  if(state.o==="Story")list=[...list].sort((a,b)=>N[a.n].t-N[b.n].t);
+  document.getElementById("count").textContent=`${list.length} of ${D.length}`;
+  const host=document.getElementById("entries");
+  host.innerHTML=list.length?list.map(d=>`
+  <article class="entry" id="${slug(d.n)}">
+    <div class="margin">
+      <span class="steph">${d.s}</span>
+      <span class="dd">Set ${N[d.n].y}</span>
+      <span class="end" style="color:var(--e-${d.e})">${ENDS[d.e]}</span>
+      <span class="role">${d.p} · Socrates ${ROLES[d.r].toLowerCase()}</span>
+    </div>
+    <div style="min-width:0">
+      <h3>${d.n}</h3>
+      <p class="q">${d.q}</p>
+      <p class="who">${d.w}</p>
+      <dl>
+        <dt>Setting</dt><dd>${N[d.n].set}</dd>
+        <dt>The scene</dt><dd>${N[d.n].act}</dd>
+        <dt>Method</dt><dd>${d.m}</dd>
+        <dt>Arrives at</dt><dd>${d.a}</dd>
+        <dt>Pushback</dt><dd>${d.o}</dd>
+        <dt>Afterward</dt><dd class="aft">${N[d.n].aft}</dd>
+        <dt>Intended lesson</dt><dd class="ethic">${d.x}</dd>
+      </dl>
+      ${mineHTML(d.n)}
+    </div>
+  </article>`).join(""):`<p class="empty">No dialogue matches both filters. Choose "All" in one row to widen the list.</p>`;
+  wireMine();renderBar();
+}
+
+/* ── My reading: base text from readings.js, local edits on top ── */
+const BASE=Object.assign({},window.READINGS||{});
+const AUTHOR=window.READINGS_AUTHOR||"Your reading";
+let LOCAL={};try{LOCAL=JSON.parse(localStorage.getItem("atlasReadings")||"{}")||{}}catch(_){LOCAL={}}
+const editing=new Set();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cur=n=>(n in LOCAL)?LOCAL[n]:(BASE[n]||"");
+const isLocal=n=>(n in LOCAL)&&LOCAL[n]!==(BASE[n]||"");
+function saveLocal(){try{localStorage.setItem("atlasReadings",JSON.stringify(LOCAL))}catch(_){}}
+function mineHTML(n){
+  const id=slug(n),t=cur(n);
+  if(editing.has(n))return `<div class="mine"><div class="hd"><b>My reading</b><span>${esc(AUTHOR)}</span></div>
+    <label class="sr" for="rd-${id}" hidden>My reading of ${esc(n)}</label>
+    <textarea id="rd-${id}" data-n="${esc(n)}">${esc(t)}</textarea>
+    <div class="btns"><button class="btn pri" data-act="save" data-n="${esc(n)}">Save</button><button class="btn" data-act="cancel" data-n="${esc(n)}">Cancel</button></div></div>`;
+  const paras=t.trim()?t.trim().split(/\n\s*\n/).map(p=>`<p>${esc(p)}</p>`).join(""):"<p>No reading yet.</p>";
+  return `<div class="mine"><div class="hd"><b>My reading</b><span>${esc(AUTHOR)}</span>${isLocal(n)?`<span class="local">edited on this device</span>`:""}</div>
+    <div class="txt${t.trim()?"":" empty"}">${paras}</div>
+    <div class="btns"><button class="btn" data-act="edit" data-n="${esc(n)}">Edit</button>${isLocal(n)?`<button class="btn" data-act="revert" data-n="${esc(n)}">Revert to file</button>`:""}</div></div>`;
+}
+function wireMine(){
+  document.querySelectorAll(".mine .btn").forEach(b=>b.onclick=()=>{
+    const n=b.dataset.n,a=b.dataset.act;
+    if(a==="edit"){editing.add(n);render();document.getElementById("rd-"+slug(n))?.focus();return}
+    if(a==="cancel"){editing.delete(n)}
+    if(a==="save"){const v=document.getElementById("rd-"+slug(n)).value;if(v===(BASE[n]||""))delete LOCAL[n];else LOCAL[n]=v;saveLocal();editing.delete(n)}
+    if(a==="revert"){delete LOCAL[n];saveLocal()}
+    render();
+  });
+}
+function fileText(){
+  const bt=s=>"`"+String(s).replace(/\\/g,"\\\\").replace(/`/g,"\\`").replace(/\$\{/g,"\\${")+"`";
+  const lines=D.map(d=>`  ${JSON.stringify(d.n)}: ${bt(cur(d.n))},`).join("\n\n");
+  return `// MY READINGS: the one part of the atlas that is your opinion.\n// Edit the text between the backticks. A blank line starts a new paragraph.\n// Keep the dialogue names exactly as they are.\n\nwindow.READINGS_AUTHOR = ${bt(AUTHOR)};\n\nwindow.READINGS = {\n${lines}\n};\n`;
+}
+let showFile=false;
+function renderBar(){
+  const k=D.filter(d=>isLocal(d.n)).length;
+  const bar=document.getElementById("mbar");
+  bar.innerHTML=`<span>${k?`${k} reading${k>1?"s":""} edited on this device. To make them permanent, copy the file and replace <code>readings.js</code> in the repository.`:`"My reading" comes from <code>readings.js</code>. Edits you make here stay on this device until you copy them into that file.`}</span>
+    <span class="btns"><button class="btn" id="cpy">Copy readings.js</button>${k?`<button class="btn" id="dsc">Discard local edits</button>`:""}</span>
+    ${showFile?`<textarea id="filetxt" readonly aria-label="readings.js contents">${esc(fileText())}</textarea>`:""}`;
+  document.getElementById("cpy").onclick=e=>{
+    const txt=fileText(),btn=e.currentTarget;
+    const fallback=()=>{showFile=true;renderBar();const ta=document.getElementById("filetxt");ta.focus();ta.select()};
+    try{navigator.clipboard.writeText(txt).then(()=>{btn.textContent="Copied";setTimeout(()=>{btn.textContent="Copy readings.js"},1600)},fallback)}catch(_){fallback()}
+  };
+  const d=document.getElementById("dsc");if(d)d.onclick=()=>{if(d.dataset.sure){LOCAL={};saveLocal();render()}else{d.dataset.sure="1";d.textContent="Click again to discard"}};
+}
+render();
+</script>
+
+</html>
